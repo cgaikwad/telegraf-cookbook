@@ -153,19 +153,19 @@ action :create do
         action :create
       end
 
-      windows_zipfile ENV['ProgramW6432'] do
+      windows_zipfile node['telegraf']['windows_install_path'] do
         source "#{Chef::Config[:file_cache_path]}/#{file_name}"
-        not_if { ::File.exist?("#{ENV['ProgramW6432']}\\telegraf\\telegraf.exe") }
+        not_if { ::File.exist?("#{node['telegraf']['windows_install_path']}\\telegraf\\telegraf.exe") }
         action :unzip
       end
 
-      directory "#{ENV['ProgramW6432']}\\telegraf\\telegraf.d" do
+      directory "#{node['telegraf']['config_file_dir']}" do
         action :create
       end
 
       windows_package 'telegraf' do
-        source "#{ENV['ProgramW6432']}\\telegraf\\telegraf.exe"
-        options "--service install --config-directory \"#{ENV['ProgramW6432']}\\telegraf\\telegraf.d\""
+        source "#{node['telegraf']['windows_install_path']}\\telegraf\\telegraf.exe"
+        options "--service install --config \"#{node['telegraf']['config_file_path']}\" --config-directory \"#{node['telegraf']['config_file_dir']}\""
         installer_type :custom
         action :install
         only_if { !::Win32::Service.exists?('telegraf') }
@@ -197,13 +197,13 @@ action :delete do
       end
     else
       win_package 'telegraf' do
-        source "#{ENV['ProgramW6432']}\\telegraf\\telegraf.exe"
+        source "#{node['telegraf']['windows_install_path']}\\telegraf\\telegraf.exe"
         options '--service uninstall'
         installer_type :custom
         action :remove
       end
 
-      directory "#{ENV['ProgramW6432']}\\telegraf" do
+      directory "#{node['telegraf']['windows_install_path']}\\telegraf" do
         action :delete
       end
     end
